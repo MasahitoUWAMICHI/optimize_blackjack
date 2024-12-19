@@ -74,7 +74,7 @@ class Blackjack:
     
     def get_dict_key(self, h, d, c):
         # return the key of the state dictionary
-        return h.tostring() + d.tostring() + str(c)
+        return np.array2string(h) + np.array2string(d) + str(c)
 
     def value_cards(self, h, d, c, q):
         # return the value of the game when the player has hand h, the dealer has hand d
