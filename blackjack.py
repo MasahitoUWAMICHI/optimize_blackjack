@@ -16,7 +16,7 @@ class Blackjack:
     # a: the alternative score of the ace
     # q_init: the initial policy of the player
     # -----------------------------------------
-    def __init__(self, b=21, t=np.array([4]*9 + [16]), scores=np.arange(1,11), a=11, q_init=0.5):
+    def __init__(self, b=21, t=np.array([4]*9 + [16], dtype=np.uint8), scores=np.arange(1,11), a=11, q_init=0.5):
         self.b = b
         self.t = t
         self.scores = scores
@@ -72,57 +72,62 @@ class Blackjack:
             return 1
         return (score_h > score_d) * 1
     
+    def get_dict_key(self, h, d, c):
+        # return the key of the state dictionary
+        return h.tobytes() + d.tobytes() + c.tobytes()
+
     def value_cards(self, h, d, c, q):
         # return the value of the game when the player has hand h, the dealer has hand d
         # c is the current player, 0 for the player and 1 for the dealer
         # q is the policy of the player; if q(h,d,c) = 0, the player stops drawing cards and the dealer starts drawing cards; otherwise, the player draws another card
-        if (h,d,c) in self.state_values.keys():
-            return self.state_values[(h,d,c)]
+        dict_key = self.get_dict_key(h, d, c)
+        if dict_key in self.state_values.keys():
+            return self.state_values[dict_key]
         
-        state_dict = self.state_dict[(h,d,c)]
+        state_dict = self.state_dict[dict_key]
 
         if state_dict['num_cards_h'] < 2:
-            self.state_values[(h,d,c)] = np.sum([self.value_cards(hp, d, c, q) * p_i for hp, p_i in zip(state_dict['h_plus'], state_dict['p'])])
-            return self.state_values[(h,d,c)]
+            self.state_values[dict_key] = np.sum([self.value_cards(hp, d, c, q) * p_i for hp, p_i in zip(state_dict['h_plus'], state_dict['p'])])
+            return self.state_values[dict_key]
         
         if state_dict['num_cards_d'] < 1:
-            self.state_values[(h,d,c)] = np.sum([self.value_cards(h, dp, c, q) * p_i for dp, p_i in zip(state_dict['d_plus'], state_dict['p'])])
-            return self.state_values[(h,d,c)]
+            self.state_values[dict_key] = np.sum([self.value_cards(h, dp, c, q) * p_i for dp, p_i in zip(state_dict['d_plus'], state_dict['p'])])
+            return self.state_values[dict_key]
 
         if state_dict['score_bust_h']:
-            self.state_values[(h,d,c)] = 0
+            self.state_values[dict_key] = 0
             return 0
         if state_dict['score_bust_d']:
-            self.state_values[(h,d,c)] = 1
+            self.state_values[dict_key] = 1
             return 1
         
         if c == 0:
             rate = q(h,d,c)
             state_value_0 = self.value_cards(h, d, 1, q)
             state_value_1 = np.sum([self.value_cards(hp, d, 0, q) * p_i for hp, p_i in zip(state_dict['h_plus'], state_dict['p'])])
-            self.state_values[(h,d,c)] = rate * state_value_0 + (1-rate) * state_value_1
+            self.state_values[dict_key] = rate * state_value_0 + (1-rate) * state_value_1
         else:
             rate = q(h,d,c)
             state_value_0 = self.def_win(h, d)
             state_value_1 = np.sum([self.value_cards(h, dp, 1, q) * p_i for dp, p_i in zip(state_dict['d_plus'], state_dict['p'])])
-            self.state_values[(h,d,c)] = rate * state_value_0 + (1-rate) * state_value_1
-        return self.state_values[(h,d,c)]
+            self.state_values[dict_key] = rate * state_value_0 + (1-rate) * state_value_1
+        return self.state_values[dict_key]
         
         '''
         if q(h,d,c) == 0:
             if c == 0:
-                self.state_values[(h,d,c)] = self.value_cards(h, d, 1, q)
-                return self.state_values[(h,d,c)]
+                self.state_values[dict_key] = self.value_cards(h, d, 1, q)
+                return self.state_values[dict_key]
             else:
-                self.state_values[(h,d,c)] = self.def_win(h, d)
-                return self.state_values[(h,d,c)]
+                self.state_values[dict_key] = self.def_win(h, d)
+                return self.state_values[dict_key]
         else:
             if c == 0:
-                self.state_values[(h,d,c)] = np.sum([self.value_cards(hp, d, 0, q) * p_i for hp, p_i in zip(state_dict['h_plus'], state_dict['p'])])
-                return self.state_values[(h,d,c)]
+                self.state_values[dict_key] = np.sum([self.value_cards(hp, d, 0, q) * p_i for hp, p_i in zip(state_dict['h_plus'], state_dict['p'])])
+                return self.state_values[dict_key]
             else:
-                self.state_values[(h,d,c)] = np.sum([self.value_cards(h, dp, 1, q) * p_i for dp, p_i in zip(state_dict['d_plus'], state_dict['p'])])
-                return self.state_values[(h,d,c)]
+                self.state_values[dict_key] = np.sum([self.value_cards(h, dp, 1, q) * p_i for dp, p_i in zip(state_dict['d_plus'], state_dict['p'])])
+                return self.state_values[dict_key]
         '''
             
     def evaluate(self, q=None):
@@ -130,14 +135,14 @@ class Blackjack:
         if q is None:
             q = self.get_variable
         self.state_values = {}
-        return self.value_cards(np.array([0]*self.Nclass), np.array([0]*self.Nclass), 0, q)
+        return self.value_cards(np.zeros_like(self.t), np.zeros_like(self.t), 0, q)
             
     def init_state_dict(self):
         # initialize the state dictionary
         self.state_dict = {}
         self.variables = []
         self.variables_idx = {}
-        self.init_hdc(np.array([0]*self.Nclass), np.array([0]*self.Nclass), 0)
+        self.init_hdc(np.zeros_like(self.t), np.zeros_like(self.t), 0)
         self.variables = np.array(self.variables)
         self.variables_init = copy.deepcopy(self.variables)
         self.variables_lb = np.zeros_like(self.variables)
@@ -145,7 +150,8 @@ class Blackjack:
 
     def init_hdc(self, h, d, c):
         # initialize the state dictionary for the player with hand h, the dealer with hand d, and the current player c
-        if (h,d,c) in self.state_dict.keys():
+        dict_key = self.get_dict_key(h, d, c)
+        if dict_key in self.state_dict.keys():
             return
         
         state_dict = {'p': self.prob_draw(h, d)}
@@ -159,7 +165,7 @@ class Blackjack:
         state_dict['num_cards_h'] = self.num_cards(h)
         state_dict['num_cards_d'] = self.num_cards(d)
         
-        self.state_dict[(h,d,c)] = state_dict
+        self.state_dict[dict_key] = state_dict
 
         if state_dict['num_cards_h'] < 2:
             for hp in state_dict['h_plus']:
@@ -176,7 +182,7 @@ class Blackjack:
         if state_dict['score_bust_d']:
             return 
         
-        self.variables_idx[(h,d,c)] = len(self.variables)
+        self.variables_idx[dict_key] = len(self.variables)
         self.variables.append(self.q_init)
         
         if c == 0:
@@ -192,7 +198,7 @@ class Blackjack:
         
     def get_variable(self, h, d, c):
         # return the policy of the player when the player has hand h, the dealer has hand d, and the current player is c
-        return self.variables[self.variables_idx[(h,d,c)]]
+        return self.variables[self.variables_idx[self.get_dict_key(h, d, c)]]
 
     def optimize(self, display=True):
         # optimize the policy of the player
