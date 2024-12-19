@@ -51,12 +51,15 @@ class Blackjack:
         # return the probability of drawing a card
         r = self.t - h - d
         r_total = np.sum(r)
+        if r_total == 0:
+            return np.zeros_like(r)
         return r/r_total
     
     def plus_one(self, u, i):
         # add one card i to the hand
-        u[i] += 1
-        return u
+        out = copy.deepcopy(u)
+        out[i] += 1
+        return out
 
     def draw_results(self, u, p):
         # return the possible hands after drawing a card
