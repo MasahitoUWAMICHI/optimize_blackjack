@@ -40,7 +40,7 @@ class Blackjack:
     def score_cards(self, u):
         # return the score of the hand
         score0 = np.sum(u * self.scores)
-        score1 = self.Adiff * np.min(np.floor((self.b-score0)/self.Adiff), u[0]) # the score of the ace
+        score1 = self.Adiff * np.amin(np.floor((self.b-score0)/self.Adiff), u[0]) # the score of the ace
         return score0 + score1
     
     def score_bust(self, score_u):
