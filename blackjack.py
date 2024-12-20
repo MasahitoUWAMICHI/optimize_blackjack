@@ -191,8 +191,7 @@ class Blackjack:
         if c == 0:
             for hp in state_dict['h_plus']:
                 self.init_hdc(hp, d, 0)
-            for dp in state_dict['d_plus']:
-                self.init_hdc(h, dp, 1)
+            self.init_hdc(h, d, 1)
             return
         else:
             for dp in state_dict['d_plus']:
