@@ -223,8 +223,7 @@ class Blackjack:
     def optimize(self, display=True):
         # optimize the policy of the player
         def objective(x):
-            for i, v in enumerate(x):
-                self.variables[i] = v
+            self.variables = x
             return 1 - self.evaluate()
         
         x0 = self.variables_init
