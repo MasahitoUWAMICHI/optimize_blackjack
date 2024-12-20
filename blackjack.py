@@ -1,6 +1,7 @@
 import numpy as np
 from scipy import optimize
 import copy
+from gekko import GEKKO
 
 class Blackjack:
     # this class is a simple implementation of the game of blackjack
@@ -233,3 +234,26 @@ class Blackjack:
                                 options={'disp': display})
         self.variables_opt = res
         return res.x
+
+
+    def optimize_with_gekko(self, display=True):
+        # create GEKKO model
+        m = GEKKO(remote=False)
+        
+        # create GEKKO variables for the policy
+        self.variables = [m.Var(value=self.q_init, lb=0, ub=1, integer=True) for _ in self.variables]
+        
+        # define the objective function
+        def objective():
+            return 1 - self.evaluate(lambda h, d, c: self.variables[self.variables_idx[self.get_dict_key(h, d, c)]].value)
+        
+        # set the objective
+        m.Obj(objective())
+        
+        # solve the optimization problem
+        m.solve(disp=display)
+        
+        # update the optimized variables
+        self.variables_opt = [var.value[0] for var in self.variables]
+        return self.variables_opt
+
