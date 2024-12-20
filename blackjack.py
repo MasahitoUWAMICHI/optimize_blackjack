@@ -186,16 +186,16 @@ class Blackjack:
         
         self.state_dict[dict_key] = state_dict
 
-        if state_dict['num_cards_h'] < 2:
-            for hp in state_dict['h_plus']:
-                self.init_hdc(hp, d, c)
-            return 
-        
         if state_dict['num_cards_d'] < 1:
             for dp in state_dict['d_plus']:
                 self.init_hdc(h, dp, c)
             return 
 
+        if state_dict['num_cards_h'] < 2:
+            for hp in state_dict['h_plus']:
+                self.init_hdc(hp, d, c)
+            return 
+        
         if state_dict['score_bust_h']:
             return 
         if state_dict['score_bust_d']:
