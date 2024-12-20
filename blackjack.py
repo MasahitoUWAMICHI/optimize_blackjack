@@ -231,5 +231,5 @@ class Blackjack:
                                 x0, 
                                 bounds=optimize.Bounds(self.variables_lb, self.variables_ub),
                                 options={'disp': display})
-        self.variables_opt = res.x
+        self.variables_opt = res
         return res.x
