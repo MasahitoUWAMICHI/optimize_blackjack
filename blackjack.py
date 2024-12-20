@@ -85,6 +85,7 @@ class Blackjack:
         # c is the current player, 0 for the player and 1 for the dealer
         # q is the policy of the player; if q(h,d,c) = 0, the player stops drawing cards and the dealer starts drawing cards; otherwise, the player draws another card
         dict_key = self.get_dict_key(h, d, c)
+        print(dict_key)
         if dict_key in self.state_values.keys():
             return self.state_values[dict_key]
         
