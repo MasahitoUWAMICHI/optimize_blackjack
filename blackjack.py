@@ -24,6 +24,7 @@ class Blackjack:
         self.q_init = q_init
 
         self.Nclass = len(t)
+        self.Ncards = np.sum(t)
 
         self.init_Adiff()
         self.init_state_dict()
@@ -89,14 +90,18 @@ class Blackjack:
         
         state_dict = self.state_dict[dict_key]
 
-        if state_dict['num_cards_h'] < 2:
-            self.state_values[dict_key] = np.sum([self.value_cards(hp, d, c, q) * p_i for hp, p_i in zip(state_dict['h_plus'], state_dict['p'])])
+        if state_dict['num_residual_cards'] == 0:
+            self.state_values[dict_key] = state_dict['win']
             return self.state_values[dict_key]
-        
+
         if state_dict['num_cards_d'] < 1:
             self.state_values[dict_key] = np.sum([self.value_cards(h, dp, c, q) * p_i for dp, p_i in zip(state_dict['d_plus'], state_dict['p'])])
             return self.state_values[dict_key]
 
+        if state_dict['num_cards_h'] < 2:
+            self.state_values[dict_key] = np.sum([self.value_cards(hp, d, c, q) * p_i for hp, p_i in zip(state_dict['h_plus'], state_dict['p'])])
+            return self.state_values[dict_key]
+        
         if state_dict['score_bust_h']:
             self.state_values[dict_key] = 0
             return 0
@@ -107,13 +112,22 @@ class Blackjack:
         if c == 0:
             rate = q(h,d,c)
             state_value_0 = self.value_cards(h, d, 1, q)
-            state_value_1 = np.sum([self.value_cards(hp, d, 0, q) * p_i for hp, p_i in zip(state_dict['h_plus'], state_dict['p'])])
+            if state_dict['num_residual_cards'] == 0:
+                state_value_1 = self.state_dict[dict_key]['win']
+            elif state_dict['num_residual_cards'] == 1:
+                state_value_1 = state_value_0
+            else:
+                state_value_1 = np.sum([self.value_cards(hp, d, 0, q) * p_i for hp, p_i in zip(state_dict['h_plus'], state_dict['p'])])
             self.state_values[dict_key] = rate * state_value_0 + (1-rate) * state_value_1
         else:
-            rate = q(h,d,c)
-            state_value_0 = self.def_win(h, d)
-            state_value_1 = np.sum([self.value_cards(h, dp, 1, q) * p_i for dp, p_i in zip(state_dict['d_plus'], state_dict['p'])])
-            self.state_values[dict_key] = rate * state_value_0 + (1-rate) * state_value_1
+            state_win = self.state_dict[dict_key]['win']
+            if state_dict['num_residual_cards'] == 0:
+                state_value = state_win
+            elif state_win == 0:
+                state_value = state_win
+            else:
+                state_value = np.sum([self.value_cards(h, dp, 1, q) * p_i for dp, p_i in zip(state_dict['d_plus'], state_dict['p'])])
+            self.state_values[dict_key] = state_value
         return self.state_values[dict_key]
         
         '''
@@ -167,6 +181,7 @@ class Blackjack:
         state_dict['win'] = self.def_win(h, d)
         state_dict['num_cards_h'] = self.num_cards(h)
         state_dict['num_cards_d'] = self.num_cards(d)
+        state_dict['num_residual_cards'] = self.Ncards - state_dict['num_cards_h'] - state_dict['num_cards_d']
         
         self.state_dict[dict_key] = state_dict
 
@@ -185,17 +200,19 @@ class Blackjack:
         if state_dict['score_bust_d']:
             return 
         
-        self.variables_idx[dict_key] = len(self.variables)
-        self.variables.append(self.q_init)
         
         if c == 0:
-            for hp in state_dict['h_plus']:
-                self.init_hdc(hp, d, 0)
+            self.variables_idx[dict_key] = len(self.variables)
+            self.variables.append(self.q_init)
+            if state_dict['num_residual_cards'] > 1:
+                for hp in state_dict['h_plus']:
+                    self.init_hdc(hp, d, 0)
             self.init_hdc(h, d, 1)
             return
         else:
-            for dp in state_dict['d_plus']:
-                self.init_hdc(h, dp, 1)
+            if state_dict['win'] == 1:
+                for dp in state_dict['d_plus']:
+                    self.init_hdc(h, dp, 1)
             return
         
     def get_variable(self, h, d, c):
