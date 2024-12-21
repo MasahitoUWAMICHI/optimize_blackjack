@@ -244,11 +244,8 @@ class Blackjack:
         self.variables = [m.Var(value=self.q_init, lb=0, ub=1, integer=True) for _ in self.variables]
         
         # define the objective function
-        def objective():
-            return 1 - self.evaluate(lambda h, d, c: self.variables[self.variables_idx[self.get_dict_key(h, d, c)]])
-        
-        # set the objective
-        m.Obj(objective)
+        # define the objective function using GEKKO syntax
+        m.Obj(1 - self.evaluate(lambda h, d, c: self.variables[self.variables_idx[self.get_dict_key(h, d, c)]]))
         
         # solve the optimization problem
         m.solve(disp=display)
