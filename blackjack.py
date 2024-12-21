@@ -245,10 +245,10 @@ class Blackjack:
         
         # define the objective function
         def objective():
-            return 1 - self.evaluate(lambda h, d, c: self.variables[self.variables_idx[self.get_dict_key(h, d, c)]].value)
+            return 1 - self.evaluate(lambda h, d, c: self.variables[self.variables_idx[self.get_dict_key(h, d, c)]])
         
         # set the objective
-        m.Obj(objective())
+        m.Obj(objective)
         
         # solve the optimization problem
         m.solve(disp=display)
