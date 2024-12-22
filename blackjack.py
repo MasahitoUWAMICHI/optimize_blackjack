@@ -255,10 +255,10 @@ class BlackjackGEKKO(Blackjack):
     # -----------------------------------------
     def __init__(self, b=21, t=np.array([4]*9 + [16], dtype=np.uint8), scores=np.arange(1,11), a=11, q_init=0.5):
         super().__init__(b, t, scores, a, q_init)
-        self.init_gekko()
-
         self.N_variables = len(self.variables)
         self.N_states = len(self.state_dict)
+
+        self.init_gekko()
 
     def init_states_idx(self):
         # initialize the indices of the states
