@@ -339,10 +339,7 @@ class BlackjackGEKKO(Blackjack):
 
         self.q = self.m.Array(self.m.Var, self.N_variables)
         for i, q_i in enumerate(self.variables):
-            self.q[i].value = q_i
-            self.q[i].lower = 0
-            self.q[i].upper = 1
-            self.q[i].integer = True
+            self.q[i] = self.m.Var(value=q_i, lb=0, ub=1, integer=True)
 
         self.init_states_idx()
         self.init_gekko_arrays()
