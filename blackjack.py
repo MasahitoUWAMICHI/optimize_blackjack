@@ -273,7 +273,7 @@ class BlackjackGEKKO(Blackjack):
         state_dict = self.state_dict[dict_key]
 
         if state_dict['num_residual_cards'] == 0:
-            self.m.value_cards_gekko[self.states_idx[dict_key]] = state_dict['win']
+            self.m.value_cards_gekko[self.states_idx_dict[dict_key]] = state_dict['win']
             self.state_dict[dict_key]['Arrays_idx'] = None
             return
 
@@ -281,7 +281,7 @@ class BlackjackGEKKO(Blackjack):
             self.Arrays.append(self.m.Array(self.m.MV, len(state_dict['d_plus'])))
             for i, dp in enumerate(state_dict['d_plus']):
                 self.Arrays[-1][i] = self.m.value_cards_gekko[self.states_idx_dict[self.get_dict_key(state_dict['h'], dp, state_dict['c'])]]
-            self.m.value_cards_gekko[self.states_idx[dict_key]] = self.m.sum(self.Arrays[-1])
+            self.m.value_cards_gekko[self.states_idx_dict[dict_key]] = self.m.sum(self.Arrays[-1])
             self.state_dict[dict_key]['Arrays_idx'] = len(self.Arrays) - 1
             return
 
@@ -289,42 +289,42 @@ class BlackjackGEKKO(Blackjack):
             self.Arrays.append(self.m.Array(self.m.MV, len(state_dict['h_plus'])))
             for i, hp in enumerate(state_dict['h_plus']):
                 self.Arrays[-1][i] = self.m.value_cards_gekko[self.states_idx_dict[self.get_dict_key(hp, state_dict['d'], state_dict['c'])]]
-            self.m.value_cards_gekko[self.states_idx[dict_key]] = self.m.sum(self.Arrays[-1])
+            self.m.value_cards_gekko[self.states_idx_dict[dict_key]] = self.m.sum(self.Arrays[-1])
             self.state_dict[dict_key]['Arrays_idx'] = len(self.Arrays) - 1
             return
             
         
         if state_dict['score_bust_h']:
-            self.m.value_cards_gekko[self.states_idx[dict_key]] = 0
+            self.m.value_cards_gekko[self.states_idx_dict[dict_key]] = 0
             self.state_dict[dict_key]['Arrays_idx'] = None
             return
         if state_dict['score_bust_d']:
-            self.m.value_cards_gekko[self.states_idx[dict_key]] = 1
+            self.m.value_cards_gekko[self.states_idx_dict[dict_key]] = 1
             self.state_dict[dict_key]['Arrays_idx'] = None
             return
         
         if state_dict['c'] == 0:
             if state_dict['num_residual_cards'] == 0:
-                self.m.value_cards_gekko[self.states_idx[dict_key]] = self.state_dict[dict_key]['win']
+                self.m.value_cards_gekko[self.states_idx_dict[dict_key]] = self.state_dict[dict_key]['win']
                 self.state_dict[dict_key]['Arrays_idx'] = None
             elif state_dict['num_residual_cards'] == 1:
-                self.m.value_cards_gekko[self.states_idx[dict_key]] = self.m.value_cards_gekko[self.states_idx_dict[self.get_dict_key(state_dict['h'], state_dict['d'], 1)]]
+                self.m.value_cards_gekko[self.states_idx_dict[dict_key]] = self.m.value_cards_gekko[self.states_idx_dict[self.get_dict_key(state_dict['h'], state_dict['d'], 1)]]
                 self.state_dict[dict_key]['Arrays_idx'] = None
             else:
                 self.Arrays.append(self.m.Array(self.m.MV, len(state_dict['h_plus'])))
                 for i, hp in enumerate(state_dict['h_plus']):
                     self.Arrays[-1][i] = self.m.value_cards_gekko[self.states_idx_dict[self.get_dict_key(hp, state_dict['d'], 0)]] * state_dict['p'][i]
-                self.m.value_cards_gekko[self.states_idx[dict_key]] = self.m.if3(self.q[self.states_idx[dict_key]], self.m.sum(self.Arrays[-1]), self.m.value_cards_gekko[self.states_idx_dict[self.get_dict_key(state_dict['h'], state_dict['d'], 1)]])
+                self.m.value_cards_gekko[self.states_idx_dict[dict_key]] = self.m.if3(self.q[self.states_idx[dict_key]], self.m.sum(self.Arrays[-1]), self.m.value_cards_gekko[self.states_idx_dict[self.get_dict_key(state_dict['h'], state_dict['d'], 1)]])
                 self.state_dict[dict_key]['Arrays_idx'] = len(self.Arrays) - 1
             return
         else:
             state_win = self.state_dict[dict_key]['win']
             if state_dict['num_residual_cards'] == 0:
-                self.m.value_cards_gekko[self.states_idx[dict_key]] = state_win
+                self.m.value_cards_gekko[self.states_idx_dict[dict_key]] = state_win
             elif state_win == 0:
-                self.m.value_cards_gekko[self.states_idx[dict_key]] = state_win
+                self.m.value_cards_gekko[self.states_idx_dict[dict_key]] = state_win
             else:
-                self.m.value_cards_gekko[self.states_idx[dict_key]] = np.sum([self.value_cards(state_dict['h'], dp, state_dict['c'], lambda h,d,c: 1) * p_i for dp, p_i in zip(state_dict['d_plus'], state_dict['p'])])
+                self.m.value_cards_gekko[self.states_idx_dict[dict_key]] = np.sum([self.value_cards(state_dict['h'], dp, state_dict['c'], lambda h,d,c: 1) * p_i for dp, p_i in zip(state_dict['d_plus'], state_dict['p'])])
             self.state_dict[dict_key]['Arrays_idx'] = None
             return 
         
