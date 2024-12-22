@@ -174,6 +174,9 @@ class Blackjack:
             return
         
         state_dict = {'p': self.prob_draw(h, d)}
+        state_dict['h'] = h
+        state_dict['d'] = d
+        state_dict['c'] = c
         state_dict['h_plus'] = self.draw_results(h, state_dict['p'])
         state_dict['d_plus'] = self.draw_results(d, state_dict['p'])
         state_dict['score_h'] = self.score_cards(h)
@@ -236,21 +239,115 @@ class Blackjack:
         return res.x
 
 
-    def optimize_with_gekko(self, display=True):
-        # create GEKKO model
-        m = GEKKO(remote=False)
+class BlackjackGEKKO(Blackjack):
+    # this class is a simple implementation of the game of blackjack
+    # the game is played between a dealer and a player
+    # the player can draw cards until they decide to stop or they bust
+    # the dealer can draw cards until their score is greater than the player's score or they bust
+    # the player wins if they have a higher score than the dealer or the dealer busts
+    # the player loses if they bust or the dealer has a higher score
+    # -----------------------------------------
+    # b: the maximum score that can be achieved
+    # t: the total number of cards in the deck
+    # scores: the scores of the cards
+    # a: the alternative score of the ace
+    # q_init: the initial policy of the player
+    # -----------------------------------------
+    def __init__(self, b=21, t=np.array([4]*9 + [16], dtype=np.uint8), scores=np.arange(1,11), a=11, q_init=0.5):
+        super.__init__(self, b, t, scores, a, q_init)
+        self.init_gekko()
+
+        self.N_variables = len(self.variables)
+        self.N_states = len(self.state_dict)
+
+    def init_states_idx(self):
+        # initialize the indices of the states
+        self.states_idx = [key for i, key in enumerate(self.state_dict.keys())]
+
+    def init_gekko_arrays(self):
+        self.Arrays = []
+
+    def init_value_cards_gekko(self, dict_key):
+        # initialize the gekko variable for the value of the state key
+        state_dict = self.state_dict[dict_key]
+
+        if state_dict['num_residual_cards'] == 0:
+            self.m.value_cards_gekko[self.states_idx[dict_key]] = state_dict['win']
+            self.state_dict[dict_key]['Arrays_idx'] = None
+            return
+
+        if state_dict['num_cards_d'] < 1:
+            self.Arrays.append(self.m.Array(self.m.MV, len(state_dict['d_plus'])))
+            for i, dp in enumerate(state_dict['d_plus']):
+                self.Arrays[-1][i] = self.m.value_cards_gekko[self.states_idx[self.get_dict_key(state_dict['h'], dp, state_dict['c'])]]
+            self.m.value_cards_gekko[self.states_idx[dict_key]] = self.m.sum(self.Arrays[-1])
+            self.state_dict[dict_key]['Arrays_idx'] = len(self.Arrays) - 1
+            return
+
+        if state_dict['num_cards_h'] < 2:
+            self.Arrays.append(self.m.Array(self.m.MV, len(state_dict['h_plus'])))
+            for i, hp in enumerate(state_dict['h_plus']):
+                self.Arrays[-1][i] = self.m.value_cards_gekko[self.states_idx[self.get_dict_key(hp, state_dict['d'], state_dict['c'])]]
+            self.m.value_cards_gekko[self.states_idx[dict_key]] = self.m.sum(self.Arrays[-1])
+            self.state_dict[dict_key]['Arrays_idx'] = len(self.Arrays) - 1
+            return
+            
         
-        # create GEKKO variables for the policy
-        self.variables = [m.Var(value=self.q_init, lb=0, ub=1, integer=True) for _ in self.variables]
+        if state_dict['score_bust_h']:
+            self.m.value_cards_gekko[self.states_idx[dict_key]] = 0
+            self.state_dict[dict_key]['Arrays_idx'] = None
+            return
+        if state_dict['score_bust_d']:
+            self.m.value_cards_gekko[self.states_idx[dict_key]] = 1
+            self.state_dict[dict_key]['Arrays_idx'] = None
+            return
         
-        # define the objective function
-        # define the objective function using GEKKO syntax
-        m.Obj(1 - self.evaluate(lambda h, d, c: self.variables[self.variables_idx[self.get_dict_key(h, d, c)]]))
+        if state_dict['c'] == 0:
+            if state_dict['num_residual_cards'] == 0:
+                self.m.value_cards_gekko[self.states_idx[dict_key]] = self.state_dict[dict_key]['win']
+                self.state_dict[dict_key]['Arrays_idx'] = None
+            elif state_dict['num_residual_cards'] == 1:
+                self.m.value_cards_gekko[self.states_idx[dict_key]] = self.m.value_cards_gekko[self.states_idx[self.get_dict_key(state_dict['h'], state_dict['d'], 1)]]
+                self.state_dict[dict_key]['Arrays_idx'] = None
+            else:
+                self.Arrays.append(self.m.Array(self.m.MV, len(state_dict['h_plus'])))
+                for i, hp in enumerate(state_dict['h_plus']):
+                    self.Arrays[-1][i] = self.m.value_cards_gekko[self.states_idx[self.get_dict_key(hp, state_dict['d'], 0)]] * state_dict['p'][i]
+                self.m.value_cards_gekko[self.states_idx[dict_key]] = self.m.if3(self.q[self.states_idx[dict_key]], self.m.sum(self.Arrays[-1]), self.m.value_cards_gekko[self.states_idx[self.get_dict_key(state_dict['h'], state_dict['d'], 1)]])
+                self.state_dict[dict_key]['Arrays_idx'] = len(self.Arrays) - 1
+            return
+        else:
+            state_win = self.state_dict[dict_key]['win']
+            if state_dict['num_residual_cards'] == 0:
+                self.m.value_cards_gekko[self.states_idx[dict_key]] = state_win
+            elif state_win == 0:
+                self.m.value_cards_gekko[self.states_idx[dict_key]] = state_win
+            else:
+                self.m.value_cards_gekko[self.states_idx[dict_key]] = np.sum([self.value_cards(state_dict['h'], dp, state_dict['c'], lambda h,d,c: 1) * p_i for dp, p_i in zip(state_dict['d_plus'], state_dict['p'])])
+            self.state_dict[dict_key]['Arrays_idx'] = None
+            return 
         
-        # solve the optimization problem
-        m.solve(disp=display)
-        
-        # update the optimized variables
-        self.variables_opt = [var.value[0] for var in self.variables]
-        return self.variables_opt
+    
+    def init_gekko(self):
+        # initialize the gekko model
+        self.m = GEKKO(remote=False)
+
+        self.m.value_cards_gekko = self.m.Array(self.m.intermediate,
+                                                (self.N_states,))
+
+        self.q = self.m.Array(self.m.MV, self.N_variables)
+
+        self.init_states_idx()
+        self.init_gekko_arrays()
+
+        for dict_key in self.states_idx:
+            self.init_value_cards_gekko(dict_key)
+
+    def evaluate(self):
+        # return the value of the game when the player follows the policy q
+        self.m.Obj(1 - self.m.value_cards_gekko[self.states_idx[self.get_dict_key(np.zeros_like(self.t), np.zeros_like(self.t), 0)]])
+        self.m.solve(disp=False)
+        return self.m.options.OBJFCNVAL
+
+
 
