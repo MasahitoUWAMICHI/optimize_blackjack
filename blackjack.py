@@ -350,6 +350,8 @@ class BlackjackGEKKO(Blackjack):
     def optimize_gekko(self, display=True):
         # return the value of the game when the player follows the policy q
         self.m.Minimize(1 - self.m.value_cards_gekko[self.states_idx_dict[self.get_dict_key(np.zeros_like(self.t), np.zeros_like(self.t), 0)]])
+        solver = 'ipopt'
+        self.m.options.SOLVER = 3
         self.m.solve(disp=display)
         return self.m.options.OBJFCNVAL
 
