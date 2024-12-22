@@ -253,8 +253,9 @@ class BlackjackGEKKO(Blackjack):
     # a: the alternative score of the ace
     # q_init: the initial policy of the player
     # -----------------------------------------
-    def __init__(self, b=21, t=np.array([4]*9 + [16], dtype=np.uint8), scores=np.arange(1,11), a=11, q_init=0.5):
+    def __init__(self, b=21, t=np.array([4]*9 + [16], dtype=np.uint8), scores=np.arange(1,11), a=11, q_init=0.5, integer_q=True):
         super().__init__(b, t, scores, a, q_init)
+        self.integer_q = integer_q
         self.N_variables = len(self.variables)
         self.N_states = len(self.state_dict)
 
@@ -339,7 +340,7 @@ class BlackjackGEKKO(Blackjack):
 
         self.q = self.m.Array(self.m.Var, self.N_variables)
         for i, q_i in enumerate(self.variables):
-            self.q[i] = self.m.Var(value=q_i, lb=0, ub=1, integer=True)
+            self.q[i] = self.m.Var(value=q_i, lb=0, ub=1, integer=self.integer_q)
 
         self.init_states_idx()
         self.init_gekko_arrays()
