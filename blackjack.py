@@ -347,11 +347,11 @@ class BlackjackGEKKO(Blackjack):
         for dict_key in self.states_idx:
             self.init_value_cards_gekko(dict_key)
 
-    def optimize_gekko(self, display=True):
+    def optimize_gekko(self, display=True, solver=1):
         # return the value of the game when the player follows the policy q
+        # solver = 1: APOPT, solver = 2: IPOPT, solver = 3: BPOPT
         self.m.Minimize(1 - self.m.value_cards_gekko[self.states_idx_dict[self.get_dict_key(np.zeros_like(self.t), np.zeros_like(self.t), 0)]])
-        solver = 'ipopt'
-        self.m.options.SOLVER = 2
+        self.m.options.SOLVER = solver
         self.m.solve(disp=display)
         return self.m.options.OBJFCNVAL
 
