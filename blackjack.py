@@ -332,8 +332,7 @@ class BlackjackGEKKO(Blackjack):
         # initialize the gekko model
         self.m = GEKKO(remote=False)
 
-        self.m.value_cards_gekko = self.m.Array(self.m.intermediate,
-                                                (self.N_states,))
+        self.m.value_cards_gekko = self.m.Array(self.m.MV, self.N_states)
 
         self.q = self.m.Array(self.m.MV, self.N_variables)
 
