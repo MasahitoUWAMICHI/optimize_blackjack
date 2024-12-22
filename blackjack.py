@@ -258,6 +258,8 @@ class BlackjackGEKKO(Blackjack):
         self.N_variables = len(self.variables)
         self.N_states = len(self.state_dict)
 
+        self.state_values = {}
+        
         self.init_gekko()
 
     def init_states_idx(self):
