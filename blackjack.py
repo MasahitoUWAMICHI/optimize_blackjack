@@ -276,7 +276,7 @@ class BlackjackGEKKO(Blackjack):
         state_dict = self.state_dict[dict_key]
 
         if state_dict['num_residual_cards'] == 0:
-            self.m.Equation(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.m.Const(state_dict['win']))
+            self.m.Connection(self.value_cards_gekko[self.states_idx_dict[dict_key]], self.m.Const(state_dict['win']))
             self.state_dict[dict_key]['Arrays_idx'] = None
             return
 
