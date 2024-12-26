@@ -323,7 +323,6 @@ class BlackjackGEKKO(Blackjack):
                 #else:
                     #self.m.Equation(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.q[self.variables_idx[dict_key]] * self.m.sum(self.Arrays[-1]) + (1-self.q[self.variables_idx[dict_key]]) * self.value_cards_gekko[self.states_idx_dict[self.get_dict_key(state_dict['h'], state_dict['d'], 1)]])
                 self.m.Equation(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.q[self.variables_idx[dict_key]] * self.m.sum(self.Arrays[-1]) + (1-self.q[self.variables_idx[dict_key]]) * self.value_cards_gekko[self.states_idx_dict[self.get_dict_key(state_dict['h'], state_dict['d'], 1)]])
-                print(dict_key)
                 self.state_dict[dict_key]['Arrays_idx'] = len(self.Arrays) - 1
             return
         else:
@@ -378,9 +377,15 @@ class BlackjackGEKKO(Blackjack):
         for dict_key in self.variables_idx.keys():
             state_dict = self.state_dict[dict_key]
             q_val = self.get_variable_gekko(state_dict['h'], state_dict['d'], state_dict['c'])
-            val_stand = self.value_cards(state_dict['h'], state_dict['d'], 1, lambda h,d,c: 1)
+            val_stand = self.value_cards(state_dict['h'], state_dict['d'], 1, lambda h,d,c: self._const_print(h,d,c,1))
             val_hit = np.sum([self.value_cards(hp, state_dict['d'], 0, self.get_variable_gekko) * p_i for hp, p_i in zip(state_dict['h_plus'], state_dict['p'])])
             self.policies_gekko_dict[dict_key] = {'q': q_val, 'val_stand': val_stand, 'val_hit': val_hit}
         return self.policies_gekko_dict
+    
+    def _const_print(self, h, d, c, val):
+        print('h:', h, 'd:', d, 'c:', c)
+        return val
+    
+
 
 
