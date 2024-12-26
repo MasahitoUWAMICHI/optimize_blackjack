@@ -27,6 +27,8 @@ class Blackjack:
         self.Nclass = len(t)
         self.Ncards = np.sum(t)
 
+        self.state_values = {}
+        
         self.init_Adiff()
         self.init_state_dict()
 
@@ -258,8 +260,6 @@ class BlackjackGEKKO(Blackjack):
         self.integer_q = integer_q
         self.N_variables = len(self.variables)
         self.N_states = len(self.state_dict)
-
-        #self.state_values = {}
 
         self.init_gekko()
 
