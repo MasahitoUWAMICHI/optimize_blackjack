@@ -243,6 +243,18 @@ class Blackjack:
                                 options={'disp': display})
         self.variables_opt = res
         return res.x
+    
+    def check_policies(self, show=False):
+        # check if the policies are optimal
+        self.policies_dict = {}
+        for dict_key in self.variables_idx.keys():
+            state_dict = self.state_dict[dict_key]
+            q_val = self.get_variable(state_dict['h'], state_dict['d'], state_dict['c'])
+            val_stand = self.value_cards(state_dict['h'], state_dict['d'], 1, self.get_variable, show)
+            vals_hit = [self.value_cards(hp, state_dict['d'], 0, self.get_variable, show) for hp in state_dict['h_plus']]
+            val_hit = np.sum([val_hit_i * p_i for val_hit_i, p_i in zip(vals_hit, state_dict['p_nz'])])
+            self.policies_dict[dict_key] = {'q': q_val, 'val_stand': val_stand, 'val_hit': val_hit}
+        return self.policies_dict
 
 
 class BlackjackGEKKO(Blackjack):
