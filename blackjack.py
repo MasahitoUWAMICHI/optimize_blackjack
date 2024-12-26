@@ -375,18 +375,14 @@ class BlackjackGEKKO(Blackjack):
         # return the value of the game when the player follows the policy q
         return self.evaluate(self.get_variable_gekko)
     
-    def check_policies_gekko(self):
+    def check_policies_gekko(self, show=False):
         # check if the policies are optimal
         self.policies_gekko_dict = {}
         for dict_key in self.variables_idx.keys():
-            print(dict_key)
             state_dict = self.state_dict[dict_key]
             q_val = self.get_variable_gekko(state_dict['h'], state_dict['d'], state_dict['c'])
-            print('stand')
-            val_stand = self.value_cards(state_dict['h'], state_dict['d'], 1, lambda h,d,c: 1, True)
-            print('hit')
-            vals_hit = [self.value_cards(hp, state_dict['d'], 0, self.get_variable_gekko, True) for hp in state_dict['h_plus']]
-            print(vals_hit, state_dict['p_nz'])
+            val_stand = self.value_cards(state_dict['h'], state_dict['d'], 1, lambda h,d,c: 1, show)
+            vals_hit = [self.value_cards(hp, state_dict['d'], 0, self.get_variable_gekko, show) for hp in state_dict['h_plus']]
             val_hit = np.sum([val_hit_i * p_i for val_hit_i, p_i in zip(vals_hit, state_dict['p_nz'])])
             self.policies_gekko_dict[dict_key] = {'q': q_val, 'val_stand': val_stand, 'val_hit': val_hit}
         return self.policies_gekko_dict
