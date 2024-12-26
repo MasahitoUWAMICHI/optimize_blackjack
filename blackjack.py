@@ -281,7 +281,7 @@ class BlackjackGEKKO(Blackjack):
             return
 
         if state_dict['num_cards_d'] < 1:
-            self.Arrays.append(self.m.Array(self.m.MV, len(state_dict['d_plus'])))
+            self.Arrays.append(self.m.Array(self.m.CV, len(state_dict['d_plus'])))
             for i, dp in enumerate(state_dict['d_plus']):
                 self.m.Equation(self.Arrays[-1][i] == self.value_cards_gekko[self.states_idx_dict[self.get_dict_key(state_dict['h'], dp, state_dict['c'])]] * state_dict['p'][i])
             self.m.Equation(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.m.sum(self.Arrays[-1]))
@@ -289,7 +289,7 @@ class BlackjackGEKKO(Blackjack):
             return
 
         if state_dict['num_cards_h'] < 2:
-            self.Arrays.append(self.m.Array(self.m.MV, len(state_dict['h_plus'])))
+            self.Arrays.append(self.m.Array(self.m.CV, len(state_dict['h_plus'])))
             for i, hp in enumerate(state_dict['h_plus']):
                 self.m.Equation(self.Arrays[-1][i] == self.value_cards_gekko[self.states_idx_dict[self.get_dict_key(hp, state_dict['d'], state_dict['c'])]] * state_dict['p'][i])
             self.m.Equation(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.m.sum(self.Arrays[-1]))
@@ -314,7 +314,7 @@ class BlackjackGEKKO(Blackjack):
                 self.m.Equation(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.value_cards_gekko[self.states_idx_dict[self.get_dict_key(state_dict['h'], state_dict['d'], 1)]])
                 self.state_dict[dict_key]['Arrays_idx'] = None
             else:
-                self.Arrays.append(self.m.Array(self.m.MV, len(state_dict['h_plus'])))
+                self.Arrays.append(self.m.Array(self.m.CV, len(state_dict['h_plus'])))
                 for i, hp in enumerate(state_dict['h_plus']):
                     self.m.Equation(self.Arrays[-1][i] == self.value_cards_gekko[self.states_idx_dict[self.get_dict_key(hp, state_dict['d'], 0)]] * state_dict['p'][i])
                 self.m.Equation(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.m.if3(self.q[self.variables_idx[dict_key]], self.m.sum(self.Arrays[-1]), self.value_cards_gekko[self.states_idx_dict[self.get_dict_key(state_dict['h'], state_dict['d'], 1)]]))
@@ -336,7 +336,7 @@ class BlackjackGEKKO(Blackjack):
         # initialize the gekko model
         self.m = GEKKO(remote=False)
 
-        self.value_cards_gekko = self.m.Array(self.m.MV, self.N_states)
+        self.value_cards_gekko = self.m.Array(self.m.CV, self.N_states)
 
         #self.q = self.m.Array(self.m.Var, self.N_variables)
         #for i, q_i in enumerate(self.variables):
