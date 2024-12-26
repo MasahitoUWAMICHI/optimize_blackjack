@@ -317,10 +317,11 @@ class BlackjackGEKKO(Blackjack):
                 self.Arrays.append(self.m.Array(self.m.SV, len(state_dict['h_plus'])))
                 for i, hp in enumerate(state_dict['h_plus']):
                     self.m.Equation(self.Arrays[-1][i] == self.value_cards_gekko[self.states_idx_dict[self.get_dict_key(hp, state_dict['d'], 0)]] * state_dict['p'][i])
-                if self.integer_q:
-                    self.m.Equation(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.m.if3(self.q[self.variables_idx[dict_key]] - 0.5, self.m.sum(self.Arrays[-1]), self.value_cards_gekko[self.states_idx_dict[self.get_dict_key(state_dict['h'], state_dict['d'], 1)]]))
-                else:
-                    self.m.Equation(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.q[self.variables_idx[dict_key]] * self.m.sum(self.Arrays[-1]) + (1-self.q[self.variables_idx[dict_key]]) * self.value_cards_gekko[self.states_idx_dict[self.get_dict_key(state_dict['h'], state_dict['d'], 1)]])
+                #if self.integer_q:
+                    #self.m.Equation(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.m.if3(self.q[self.variables_idx[dict_key]] - 0.5, self.m.sum(self.Arrays[-1]), self.value_cards_gekko[self.states_idx_dict[self.get_dict_key(state_dict['h'], state_dict['d'], 1)]]))
+                #else:
+                    #self.m.Equation(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.q[self.variables_idx[dict_key]] * self.m.sum(self.Arrays[-1]) + (1-self.q[self.variables_idx[dict_key]]) * self.value_cards_gekko[self.states_idx_dict[self.get_dict_key(state_dict['h'], state_dict['d'], 1)]])
+                self.m.Equation(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.q[self.variables_idx[dict_key]] * self.m.sum(self.Arrays[-1]) + (1-self.q[self.variables_idx[dict_key]]) * self.value_cards_gekko[self.states_idx_dict[self.get_dict_key(state_dict['h'], state_dict['d'], 1)]])
                 print(dict_key)
                 self.state_dict[dict_key]['Arrays_idx'] = len(self.Arrays) - 1
             return
