@@ -102,11 +102,11 @@ class Blackjack:
             return self.state_values[dict_key]
 
         if state_dict['num_cards_d'] < 1:
-            self.state_values[dict_key] = np.sum([self.value_cards(h, dp, c, q) * p_i for dp, p_i in zip(state_dict['d_plus'], state_dict['p'])])
+            self.state_values[dict_key] = np.sum([self.value_cards(h, dp, c, q, show) * p_i for dp, p_i in zip(state_dict['d_plus'], state_dict['p'])])
             return self.state_values[dict_key]
 
         if state_dict['num_cards_h'] < 2:
-            self.state_values[dict_key] = np.sum([self.value_cards(hp, d, c, q) * p_i for hp, p_i in zip(state_dict['h_plus'], state_dict['p'])])
+            self.state_values[dict_key] = np.sum([self.value_cards(hp, d, c, q, show) * p_i for hp, p_i in zip(state_dict['h_plus'], state_dict['p'])])
             return self.state_values[dict_key]
         
         if state_dict['score_bust_h']:
@@ -118,13 +118,13 @@ class Blackjack:
         
         if c == 0:
             rate = q(h,d,c)
-            state_value_0 = self.value_cards(h, d, 1, q)
+            state_value_0 = self.value_cards(h, d, 1, q, show)
             if state_dict['num_residual_cards'] == 0:
                 state_value_1 = self.state_dict[dict_key]['win']
             elif state_dict['num_residual_cards'] == 1:
                 state_value_1 = state_value_0
             else:
-                state_value_1 = np.sum([self.value_cards(hp, d, 0, q) * p_i for hp, p_i in zip(state_dict['h_plus'], state_dict['p'])])
+                state_value_1 = np.sum([self.value_cards(hp, d, 0, q, show) * p_i for hp, p_i in zip(state_dict['h_plus'], state_dict['p'])])
             self.state_values[dict_key] = rate * state_value_0 + (1-rate) * state_value_1
         else:
             state_win = self.state_dict[dict_key]['win']
@@ -133,7 +133,7 @@ class Blackjack:
             elif state_win == 0:
                 state_value = state_win
             else:
-                state_value = np.sum([self.value_cards(h, dp, 1, q) * p_i for dp, p_i in zip(state_dict['d_plus'], state_dict['p'])])
+                state_value = np.sum([self.value_cards(h, dp, 1, q, show) * p_i for dp, p_i in zip(state_dict['d_plus'], state_dict['p'])])
             self.state_values[dict_key] = state_value
         return self.state_values[dict_key]
         
