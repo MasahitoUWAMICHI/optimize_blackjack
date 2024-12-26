@@ -77,7 +77,7 @@ class Blackjack:
             return 0
         if self.score_bust(score_d):
             return 1
-        return (score_h > score_d) * 1
+        return (score_h >= score_d) * 1
     
     def get_dict_key(self, h, d, c):
         # return the key of the state dictionary
