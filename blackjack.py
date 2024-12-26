@@ -83,11 +83,14 @@ class Blackjack:
         # return the key of the state dictionary
         return np.array2string(h) + np.array2string(d) + str(c)
 
-    def value_cards(self, h, d, c, q):
+    def value_cards(self, h, d, c, q, show=False):
         # return the value of the game when the player has hand h, the dealer has hand d
         # c is the current player, 0 for the player and 1 for the dealer
         # q is the policy of the player; if q(h,d,c) = 0, the player stops drawing cards and the dealer starts drawing cards; otherwise, the player draws another card
         dict_key = self.get_dict_key(h, d, c)
+
+        if show:
+            print('h:', h, 'd:', d, 'c:', c)
         
         if dict_key in self.state_values.keys():
             return self.state_values[dict_key]
@@ -377,15 +380,12 @@ class BlackjackGEKKO(Blackjack):
         for dict_key in self.variables_idx.keys():
             state_dict = self.state_dict[dict_key]
             q_val = self.get_variable_gekko(state_dict['h'], state_dict['d'], state_dict['c'])
-            val_stand = self.value_cards(state_dict['h'], state_dict['d'], 1, lambda h,d,c: self._const_print(h,d,c,1))
-            val_hit = np.sum([self.value_cards(hp, state_dict['d'], 0, self.get_variable_gekko) * p_i for hp, p_i in zip(state_dict['h_plus'], state_dict['p'])])
+            val_stand = self.value_cards(state_dict['h'], state_dict['d'], 1, lambda h,d,c: 1, True)
+            val_hit = np.sum([self.value_cards(hp, state_dict['d'], 0, self.get_variable_gekko, True) * p_i for hp, p_i in zip(state_dict['h_plus'], state_dict['p'])])
             self.policies_gekko_dict[dict_key] = {'q': q_val, 'val_stand': val_stand, 'val_hit': val_hit}
         return self.policies_gekko_dict
     
-    def _const_print(self, h, d, c, val):
-        print('h:', h, 'd:', d, 'c:', c)
-        return val
-    
+
 
 
 
