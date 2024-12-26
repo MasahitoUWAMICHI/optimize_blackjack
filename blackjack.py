@@ -125,7 +125,7 @@ class Blackjack:
                 state_value_1 = state_value_0
             else:
                 state_value_1 = np.sum([self.value_cards(hp, d, 0, q, show) * p_i for hp, p_i in zip(state_dict['h_plus'], state_dict['p_nz'])])
-            self.state_values[dict_key] = rate * state_value_0 + (1-rate) * state_value_1
+            self.state_values[dict_key] = (1-rate) * state_value_0 + rate * state_value_1
         else:
             state_win = self.state_dict[dict_key]['win']
             if state_dict['num_residual_cards'] == 0:
@@ -326,7 +326,7 @@ class BlackjackGEKKO(Blackjack):
                     #self.m.Equation(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.m.if3(self.q[self.variables_idx[dict_key]] - 0.5, self.m.sum(self.Arrays[-1]), self.value_cards_gekko[self.states_idx_dict[self.get_dict_key(state_dict['h'], state_dict['d'], 1)]]))
                 #else:
                     #self.m.Equation(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.q[self.variables_idx[dict_key]] * self.m.sum(self.Arrays[-1]) + (1-self.q[self.variables_idx[dict_key]]) * self.value_cards_gekko[self.states_idx_dict[self.get_dict_key(state_dict['h'], state_dict['d'], 1)]])
-                self.m.Equation(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.q[self.variables_idx[dict_key]] * self.m.sum(self.Arrays[-1]) + (1-self.q[self.variables_idx[dict_key]]) * self.value_cards_gekko[self.states_idx_dict[self.get_dict_key(state_dict['h'], state_dict['d'], 1)]])
+                self.m.Equation(self.value_cards_gekko[self.states_idx_dict[dict_key]] == (1-self.q[self.variables_idx[dict_key]]) * self.value_cards_gekko[self.states_idx_dict[self.get_dict_key(state_dict['h'], state_dict['d'], 1)]] + self.q[self.variables_idx[dict_key]] * self.m.sum(self.Arrays[-1]))
                 self.state_dict[dict_key]['Arrays_idx'] = len(self.Arrays) - 1
             return
         else:
