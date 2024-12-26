@@ -384,7 +384,9 @@ class BlackjackGEKKO(Blackjack):
             print('stand')
             val_stand = self.value_cards(state_dict['h'], state_dict['d'], 1, lambda h,d,c: 1, True)
             print('hit')
-            val_hit = np.sum([self.value_cards(hp, state_dict['d'], 0, self.get_variable_gekko, True) * p_i for hp, p_i in zip(state_dict['h_plus'], state_dict['p'])])
+            vals_hit = [self.value_cards(hp, state_dict['d'], 0, self.get_variable_gekko, True) for hp in state_dict['h_plus']]
+            print(vals_hit, state_dict['p'])
+            val_hit = np.sum([val_hit_i * p_i for val_hit_i, p_i in zip(vals_hit, state_dict['p'])])
             self.policies_gekko_dict[dict_key] = {'q': q_val, 'val_stand': val_stand, 'val_hit': val_hit}
         return self.policies_gekko_dict
     
