@@ -298,20 +298,20 @@ class BlackjackGEKKO(Blackjack):
             
         
         if state_dict['score_bust_h']:
-            self.m.Equation(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.m.Const(0))
+            self.m.Connection(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.m.Const(0))
             self.state_dict[dict_key]['Arrays_idx'] = None
             return
         if state_dict['score_bust_d']:
-            self.m.Equation(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.m.Const(1))
+            self.m.Connection(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.m.Const(1))
             self.state_dict[dict_key]['Arrays_idx'] = None
             return
         
         if state_dict['c'] == 0:
             if state_dict['num_residual_cards'] == 0:
-                self.m.Equation(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.m.Const(state_dict['win']))
+                self.m.Connection(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.m.Const(state_dict['win']))
                 self.state_dict[dict_key]['Arrays_idx'] = None
             elif state_dict['num_residual_cards'] == 1:
-                self.m.Equation(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.value_cards_gekko[self.states_idx_dict[self.get_dict_key(state_dict['h'], state_dict['d'], 1)]])
+                self.m.Connection(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.value_cards_gekko[self.states_idx_dict[self.get_dict_key(state_dict['h'], state_dict['d'], 1)]])
                 self.state_dict[dict_key]['Arrays_idx'] = None
             else:
                 self.Arrays.append(self.m.Array(self.m.CV, len(state_dict['h_plus'])))
@@ -323,11 +323,11 @@ class BlackjackGEKKO(Blackjack):
         else:
             state_win = self.state_dict[dict_key]['win']
             if state_dict['num_residual_cards'] == 0:
-                self.m.Equation(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.m.Const(state_win))
+                self.m.Connection(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.m.Const(state_win))
             elif state_win == 0:
-                self.m.Equation(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.m.Const(state_win))
+                self.m.Connection(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.m.Const(state_win))
             else:
-                self.m.Equation(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.m.Const(np.sum([self.value_cards(state_dict['h'], dp, state_dict['c'], lambda h,d,c: 1) * p_i for dp, p_i in zip(state_dict['d_plus'], state_dict['p'])])))
+                self.m.Connection(self.value_cards_gekko[self.states_idx_dict[dict_key]] == self.m.Const(np.sum([self.value_cards(state_dict['h'], dp, state_dict['c'], lambda h,d,c: 1) * p_i for dp, p_i in zip(state_dict['d_plus'], state_dict['p'])])))
             self.state_dict[dict_key]['Arrays_idx'] = None
             return 
         
